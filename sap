@@ -75,6 +75,15 @@ case "$1" in
     startsap
     ;;
 
+  'status')
+    # TODO: Port check
+    if [ -f /var/lock/sap.lock ]; then
+      echo "SAP is running!"
+    else
+      echo "SAP is NOT running!"
+    fi
+    ;;
+
   'stop')
     echo "Stopping SAP..."
     stopsap
