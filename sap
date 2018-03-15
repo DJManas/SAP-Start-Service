@@ -1,0 +1,23 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides: sap
+# Required-Start: sapinit
+# Default-Start: 2 3 5
+# Default-Stop: 0 1 6
+# Description: Starts SAP on this system, when restarting or after shutdown
+### END INIT INFO
+
+SAPADMIN="<your user here>"
+
+case "$1" in
+  'start')
+    date > /var/log/startSap
+    su $SAPADMIN -c "startsap >> /var/log/startSap" &
+    touch /var/lock/sap.lock
+    ;;
+  'stop')
+    date > /var/log/stopSap
+    su $SAPADMIN -c "stopsap >> /var/log/stopSap"
+    rm -f /var/lock/sap.lock
+    ;;
+esac
