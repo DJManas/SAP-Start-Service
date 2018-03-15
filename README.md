@@ -9,9 +9,11 @@ Just written, because SAP server was restarting because of HW error and I needed
 This time it works on Oracle Linux, for other ones this might need a little tampering.
 
 # TO-DO
-- Implement restart command
 - Notification on error, now it starts and when error occurs, nothing happens
 - Make it systemd friendly (maybe it is, haven't looked for it yet)
 - Implement SAP HANA enhancements - if needed
 - Make it friendly for other supported Linux distributions, now only Oracle Linux (RHEL) fiendly
-- Make use of configuration file, now variables should be changed inside service file (something like on FreeBSD /etc/make.conf or Debian's /etc/defaults/*)
+- Make use of configuration file, now variables should be changed inside service file (something like on FreeBSD's /etc/make.conf or Debian's /etc/defaults/*)
+- Additional checks according to ports binded, not only /var/lock/sap.lock
+- Check for return commands of previous commands or parse log files
+- Check if user, under which it should be run, exists

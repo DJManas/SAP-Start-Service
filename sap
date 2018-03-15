@@ -7,17 +7,76 @@
 # Description: Starts SAP on this system, when restarting or after shutdown
 ### END INIT INFO
 
+# Script variables
+# TODO: Add check if user exists
 SAPADMIN="<your user here>"
 
+# Functions
+# Starts SAP and initializes logging
+startsap() {
+  # If /var/lock/sap.lock exists, then SAP has been already started or is starting
+  # Throw message and exit with return code 0
+  # TODO: Add check if SAP is listening on certain ports
+  if [ -f /var/lock/sap.lock ]; then
+    echo "Sap is already starting or has been started, please take a look at /var/log/SAPStart log!"
+    exit 0
+  fi
+
+  # Initialize log with actual date/time
+  date > /var/log/SAPStart
+
+  # Launch command under SAP admin user and return, because when booting up
+  # we don't want to wait for SAP to start
+  su $SAPADMIN -c "startsap >> /var/log/SAPStart" &
+
+  # Create the file lock
+  # TODO: Check return code of previous command
+  touch /var/lock/sap.lock
+}
+
+stopsap() {
+  # If /var/lock/sap.lock doesn't exist, then SAP has been already stopped
+  # Throw message and exit with return code 0
+  # TODO: Add check if SAP is listening on certain ports or not
+  if [ ! -f /var/lock/sap.lock ]; then
+    echo "Sap is already stopped, please take a look at /var/log/SAPStop log!"
+    exit 0
+  fi
+
+  # Initialize log
+  date > /var/log/SAPStop
+
+  # Execute command under SAP admin user and log, we have no problem in waiting for command to finish
+  su $SAPADMIN -c "stopsap >> /var/log/SAPStop"
+
+  # Remove the file lock
+  # TODO: Check return code of previous command
+  rm -f /var/lock/sap.lock
+}
+
+# Main service
 case "$1" in
-  'start')
-    date > /var/log/startSap
-    su $SAPADMIN -c "startsap >> /var/log/startSap" &
-    touch /var/lock/sap.lock
+  'restart')
+    # Check if file exists or not, when exists, do only sapstart function, otherwise do both
+    if [ ! -f /var/lock/sap.lock ]; then
+      echo "SAP is not running, starting now!"
+      startsap
+    else
+      echo "Stopping SAP..."
+      stopsap
+
+      echo "Starting SAP..."
+      startsap
+    fi
     ;;
+
+  'start')
+    echo "Starting SAP..."
+    startsap
+    ;;
+
   'stop')
-    date > /var/log/stopSap
-    su $SAPADMIN -c "stopsap >> /var/log/stopSap"
-    rm -f /var/lock/sap.lock
+    echo "Stopping SAP..."
+    stopsap
     ;;
 esac
